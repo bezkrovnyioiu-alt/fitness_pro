@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F1">
+<title>Мій тренер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --base: #F3F4F1;
+    --surface: #FFFFFF;
+    --ink: #17181A;
+    --ink-2: #5E6167;
+    --ink-3: #9A9DA3;
+    --line: #E4E5E0;
+    --bronze: #B08A52;
+    --bronze-soft: #F1EADC;
+    --onyx: #17181A;
+    --ok: #3F7A5A;
+    --warn: #9A5B2E;
+    --serif: "Cormorant Garamond", "Times New Roman", serif;
+    --sans: "Golos Text", system-ui, -apple-system, sans-serif;
+    --r-lg: 24px;
+    --r-md: 16px;
+    --shadow: 0 1px 2px rgba(23,24,26,.04), 0 8px 24px -12px rgba(23,24,26,.12);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --base: #101112; --surface: #1A1B1D; --ink: #F3F1EC; --ink-2: #B5B7BC;
+      --ink-3: #7C7F86; --line: #2A2B2E; --bronze: #CDA86E; --bronze-soft: #2A241B;
+      --onyx: #050506; --ok: #7CC29A; --warn: #E0A072; --shadow: 0 8px 24px -12px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--base); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: inherit; }
+  button:focus-visible { outline: 2px solid var(--bronze); outline-offset: 3px; border-radius: 10px; }
+  button:disabled { cursor: not-allowed; }
+
+  .app { max-width: 440px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(112px + env(safe-area-inset-bottom, 0px)); }
+  .screen { animation: fade .4s ease-out; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .screen { animation: none; } }
+
+  .head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 22px; }
+  .hello { font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1.05; }
+  .hello em { font-style: italic; color: var(--bronze); font-weight: 500; }
+  .sub { color: var(--ink-2); font-size: 14px; margin-top: -12px; margin-bottom: 20px; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--bronze); }
+
+  .card-dark { background: var(--onyx); color: #F3F1EC; border-radius: var(--r-lg); padding: 26px 24px 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+  .card-dark::before, .card-dark::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(205,168,110,.2); pointer-events: none; }
+  .card-dark::before { right: -20px; top: -20px; width: 110px; height: 110px; }
+  .card-dark::after { right: -60px; top: -60px; width: 180px; height: 180px; }
+  .balance-row { display: flex; align-items: flex-end; gap: 12px; }
+  .big { font-family: var(--serif); font-weight: 600; font-size: 96px; line-height: .8; }
+  .big-of { font-family: var(--serif); font-size: 28px; color: #CDA86E; padding-bottom: 4px; }
+  .balance-label { color: rgba(243,241,236,.7); font-size: 14px; margin-top: 14px; }
+  .bar { height: 4px; background: rgba(243,241,236,.12); border-radius: 4px; margin: 22px 0 14px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, #CDA86E, #E9D3A6); border-radius: 4px; transition: width .6s ease; }
+  .card-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: rgba(243,241,236,.6); }
+
+  .banner { margin-top: 16px; background: var(--bronze-soft); color: var(--ink); border-radius: var(--r-md); padding: 14px 16px; display: flex; gap: 12px; align-items: center; }
+  .banner .bell { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 50%; background: var(--bronze); color: #fff; display: grid; place-items: center; }
+  .banner .bell svg { width: 17px; height: 17px; }
+  .banner strong { font-weight: 600; }
+  .banner p { font-size: 14px; color: var(--ink-2); }
+
+  .notice { margin-top: 16px; border-radius: var(--r-md); padding: 14px 16px; background: var(--surface); box-shadow: var(--shadow); font-size: 14px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+  .notice.warn { color: var(--warn); }
+  .notice .link { color: var(--bronze); font-weight: 600; white-space: nowrap; }
+
+  .section { margin-top: 28px; }
+  .section-title { font-family: var(--serif); font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+
+  .next { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow); padding: 16px 18px; display: flex; gap: 16px; align-items: center; }
+  .date-tile { width: 60px; flex: 0 0 60px; height: 66px; border-radius: 14px; background: var(--bronze-soft); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--bronze); }
+  .date-tile .d { font-family: var(--serif); font-size: 28px; font-weight: 700; line-height: 1; }
+  .date-tile .m { font-size: 12px; margin-top: 2px; }
+  .next h3 { font-size: 16px; font-weight: 600; }
+  .next p { color: var(--ink-2); font-size: 14px; }
+  .empty { background: var(--surface); border-radius: var(--r-md); padding: 20px; color: var(--ink-2); font-size: 14px; text-align: center; box-shadow: var(--shadow); }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; border-radius: 999px; background: var(--ink); color: var(--base); font-weight: 600; font-size: 15px; transition: transform .15s ease, opacity .2s; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .35; }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn.bronze { background: var(--bronze); color: #fff; }
+  .btn.small { width: auto; padding: 10px 16px; font-size: 14px; }
+  .stack { display: grid; gap: 10px; margin-top: 22px; }
+
+  .pick-label { font-family: var(--serif); font-size: 20px; font-weight: 600; margin: 22px 0 10px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; padding: 9px 16px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); font-size: 14px; font-weight: 500; transition: background .2s, color .2s; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--base); }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .day { padding: 12px 0 10px; border-radius: 16px; text-align: center; background: var(--surface); box-shadow: var(--shadow); transition: background .2s, color .2s; }
+  .day .wd { font-size: 12px; color: var(--ink-3); }
+  .day .n { font-family: var(--serif); font-size: 22px; font-weight: 600; line-height: 1.1; }
+  .day[aria-pressed="true"] { background: var(--ink); color: var(--base); }
+  .day[aria-pressed="true"] .wd { color: var(--bronze); }
+  .day .has { display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--bronze); margin: 4px auto 0; }
+
+  .slot { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 18px; margin-top: 10px; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow); }
+  .slot:not(:disabled):active { transform: scale(.99); }
+  .slot .time { font-family: var(--serif); font-size: 24px; font-weight: 600; min-width: 62px; }
+  .slot .info { flex: 1; min-width: 0; }
+  .slot .kind { font-weight: 600; }
+  .slot .spots { font-size: 13px; color: var(--ink-2); }
+  .slot .pill { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: var(--bronze-soft); color: var(--bronze); white-space: nowrap; }
+  .slot:disabled { opacity: .5; }
+  .slot.mine { box-shadow: inset 0 0 0 1.5px var(--bronze), var(--shadow); }
+  .slot.mine .pill { background: var(--bronze); color: #fff; }
+  .slot:disabled .pill { background: var(--line); color: var(--ink-2); }
+  .hint { color: var(--ink-3); font-size: 13px; margin-top: 18px; text-align: center; }
+
+  .plan { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 20px 22px; margin-top: 12px; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; }
+  .plan .pn { font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1; }
+  .plan .pn small { font-size: 15px; font-family: var(--sans); color: var(--ink-2); font-weight: 400; }
+  .plan .pp { font-family: var(--serif); font-size: 26px; font-weight: 600; color: var(--bronze); text-align: right; }
+  .plan .pd { color: var(--ink-2); font-size: 13px; }
+  .plan .btn { grid-column: 1 / -1; margin-top: 10px; padding: 13px; }
+  .plan.best { box-shadow: inset 0 0 0 1.5px var(--bronze), var(--shadow); }
+  .tag-best { font-size: 12px; font-weight: 600; color: var(--bronze); }
+
+  .group { font-size: 13px; color: var(--ink-3); margin: 18px 0 8px; }
+  .list { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow); overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; background: var(--ok); }
+  .row.up .dot { background: var(--bronze); }
+  .row.missed .dot, .row.cancelled .dot { background: var(--ink-3); }
+  .row .info { flex: 1; min-width: 0; }
+  .row .name { font-weight: 600; }
+  .row .meta { font-size: 13px; color: var(--ink-2); }
+  .row .status { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+  .row .cancel { font-size: 13px; color: var(--bronze); font-weight: 500; margin-top: 4px; }
+  .row .cancel:disabled { color: var(--ink-3); }
+  .row .note { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+  .tabs-inner { pointer-events: auto; width: 100%; max-width: 416px; display: grid; grid-template-columns: repeat(4, 1fr); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 999px; box-shadow: var(--shadow), inset 0 0 0 1px var(--line); padding: 6px; }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 7px; border-radius: 999px; font-size: 11px; color: var(--ink-3); transition: background .25s, color .25s; }
+  .tab svg { width: 21px; height: 21px; }
+  .tab[aria-selected="true"] { background: var(--ink); color: var(--base); }
+  .tab[aria-selected="true"] svg { color: var(--bronze); }
+
+  .scrim { position: fixed; inset: 0; background: rgba(12,12,14,.35); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .sheet { position: fixed; left: 50%; bottom: 0; z-index: 11; transform: translate(-50%, 105%); width: 100%; max-width: 440px; background: var(--surface); border-radius: 28px 28px 0 0; padding: 12px 22px calc(22px + env(safe-area-inset-bottom, 0px)); transition: transform .35s cubic-bezier(.2,.8,.2,1); box-shadow: 0 -10px 40px rgba(0,0,0,.12); }
+  .sheet.open { transform: translate(-50%, 0); }
+  .grip { width: 38px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 18px; }
+  .sheet h2 { font-family: var(--serif); font-size: 28px; font-weight: 600; margin-bottom: 6px; }
+  .sheet p { color: var(--ink-2); font-size: 14px; }
+  .sheet .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .sheet .btn { padding: 14px; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 10px); background: var(--ink); color: var(--base); padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 20; max-width: 90%; text-align: center; box-shadow: var(--shadow); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<main class="app" id="app"></main>
+
+<nav class="tabs" aria-label="Навігація">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" role="tab" data-go="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+      Головна
+    </button>
+    <button class="tab" role="tab" data-go="book">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      Записатися
+    </button>
+    <button class="tab" role="tab" data-go="plans">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M7 15h4"/></svg>
+      Абонемент
+    </button>
+    <button class="tab" role="tab" data-go="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      Історія
+    </button>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="grip"></div>
+  <h2 id="sheet-title"></h2>
+  <p id="sheet-text"></p>
+  <div class="pair">
+    <button class="btn ghost" id="sheet-no">Ні</button>
+    <button class="btn" id="sheet-yes">Так</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // ===== Налаштування =====
+  const KEY = "trainer-app-v1";
+  const TOTAL_DEFAULT = 12;
+  const CAP = 6;                    // місць у групі
+  const CANCEL_HOURS = 4;           // скасування не пізніше ніж за 4 години
+  const TIMES = ["07:30", "09:00", "12:00", "18:00", "19:30"];
+  const KINDS = ["Силове", "Кардіо", "Функціональне", "Розтяжка"];
+  const PACKS = [
+    { n: 4,  price: 600,  days: 30, label: "Старт" },
+    { n: 8,  price: 1000, days: 60, label: "Регулярно" },
+    { n: 12, price: 1500, days: 90, label: "Найвигідніше" }
+  ];
+  const MONTHS_G = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
+  const MONTHS_S = ["січ","лют","бер","квіт","трав","черв","лип","серп","вер","жовт","лист","груд"];
+  const WD_FULL = ["неділя","понеділок","вівторок","середа","четвер","п’ятниця","субота"];
+  const WD_S = ["нд","пн","вт","ср","чт","пт","сб"];
+  const CLIENT = "Марина";
+
+  // ===== Допоміжні =====
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  const now = () => new Date();
+  const dayStart = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const sameDay = (a, b) => dayStart(a).getTime() === dayStart(b).getTime();
+  const at = (day, time) => { const [h, m] = time.split(":").map(Number); const x = dayStart(day); x.setHours(h, m, 0, 0); return x; };
+  const fmtDay = d => `${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
+  const fmtDayShort = d => `${d.getDate()} ${MONTHS_S[d.getMonth()]}`;
+  const fmtTime = d => d.toTimeString().slice(0, 5);
+  const money = n => n.toLocaleString("uk-UA").replace(/,/g, " ") + " ₴";
+  function plural(n) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return "заняття";
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "заняття";
+    return "занять";
+  }
+  function greeting() {
+    const h = now().getHours();
+    if (h < 12) return "Доброго ранку";
+    if (h < 18) return "Добрий день";
+    return "Добрий вечір";
+  }
+
+  // ===== Стан (зберігається в браузері) =====
+  function seedState() {
+    const t = now();
+    return {
+      balance: 6,
+      packTotal: TOTAL_DEFAULT,
+      expires: addDays(t, 70).toISOString(),
+      payments: [{ date: addDays(t, -20).toISOString(), n: 12, price: 1500 }],
+      bookings: [
+        { start: at(addDays(t, -13), "18:00").toISOString(), kind: "Силове", status: "missed" },
+        { start: at(addDays(t, -10), "19:30").toISOString(), kind: "Розтяжка", status: "booked" },
+        { start: at(addDays(t, -6), "09:00").toISOString(), kind: "Кардіо", status: "booked" },
+        { start: at(addDays(t, -3), "18:00").toISOString(), kind: "Силове", status: "booked" },
+        { start: at(addDays(t, 2), "18:00").toISOString(), kind: "Силове", status: "booked" },
+        { start: at(addDays(t, 6), "09:00").toISOString(), kind: "Функціональне", status: "booked" }
+      ]
+    };
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return seedState();
+  }
+  function saveState() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  let state = loadState();
+
+  // ===== Розклад (спільний для всіх клієнтів) =====
+  function kindFor(offset, idx) { return KINDS[(idx + offset) % KINDS.length]; }
+  function takenFor(offset, idx) { return (offset * 7 + idx * 5) % 7; }   // зайнятих місць від інших клієнтів
+  function slotInfo(offset, idx) {
+    const start = at(addDays(now(), offset), TIMES[idx]);
+    const taken = takenFor(offset, idx);
+    const mine = state.bookings.find(b => b.start === start.toISOString() && b.status === "booked");
+    const past = start.getTime() <= now().getTime();
+    return {
+      start, time: TIMES[idx], kind: kindFor(offset, idx),
+      spots: Math.max(CAP - taken, 0), full: taken >= CAP, past, mine: !!mine
+    };
+  }
+  function hasActiveAccess() { return state.balance > 0 && new Date(state.expires) > now(); }
+  function bookingStatus(b) {
+    if (b.status === "missed") return "missed";
+    if (b.status === "cancelled") return "cancelled";
+    return new Date(b.start) > now() ? "up" : "done";
+  }
+  function canCancel(b) {
+    return bookingStatus(b) === "up" && (new Date(b.start) - now()) >= CANCEL_HOURS * 3600 * 1000;
+  }
+  function upcomingList() {
+    return state.bookings.filter(b => bookingStatus(b) === "up").sort((a, b) => new Date(a.start) - new Date(b.start));
+  }
+
+  // ===== Дії =====
+  let currentScreen = "home";
+  let selectedOffset = 0;
+  let selectedKind = "all";
+  let pending = null;
+
+  function go(name) {
+    currentScreen = name;
+    window.scrollTo(0, 0);
+    render();
+  }
+
+  function bookSlot(offset, idx) {
+    const info = slotInfo(offset, idx);
+    if (!hasActiveAccess()) { toast("Абонемент закінчився. Оберіть новий у розділі «Абонемент»."); return; }
+    if (info.past || info.full || info.mine) return;
+    const left = state.balance - 1;
+    openSheet(
+      "Записати на тренування?",
+      `${cap(WD_FULL[info.start.getDay()])}, ${fmtDay(info.start)}, ${info.time} · ${info.kind}. Після запису залишиться ${left} ${plural(left)}.`,
+      "Записатися",
+      () => {
+        state.balance -= 1;
+        state.bookings.push({ start: info.start.toISOString(), kind: info.kind, status: "booked" });
+        saveState();
+        toast("Записано. Нагадаємо за годину до початку.");
+        render();
+      }
+    );
+  }
+
+  function cancelBooking(startIso) {
+    const b = state.bookings.find(x => x.start === startIso && x.status === "booked");
+    if (!b || !canCancel(b)) { toast(`Скасувати можна не пізніше ніж за ${CANCEL_HOURS} години до початку.`); return; }
+    openSheet(
+      "Скасувати запис?",
+      `${b.kind}, ${fmtDayShort(new Date(b.start))} о ${fmtTime(new Date(b.start))}. Заняття повернеться на баланс.`,
+      "Скасувати",
+      () => {
+        b.status = "cancelled";
+        state.balance += 1;
+        saveState();
+        toast("Запис скасовано. Заняття повернулося на баланс.");
+        render();
+      }
+    );
+  }
+
+  function buyPack(n) {
+    const pack = PACKS.find(p => p.n === n);
+    openSheet(
+      `Абонемент на ${pack.n} занять`,
+      `${money(pack.price)} · діє ${pack.days} днів. Це тестова покупка: справжня оплата ще не підключена, гроші не списуються.`,
+      "Оформити",
+      () => {
+        const base = hasActiveAccess() ? new Date(state.expires) : now();
+        state.balance += pack.n;
+        state.packTotal = pack.n;
+        state.expires = addDays(base, pack.days).toISOString();
+        state.payments.unshift({ date: now().toISOString(), n: pack.n, price: pack.price });
+        saveState();
+        toast(`Абонемент оформлено. Доступно ${state.balance} ${plural(state.balance)}.`);
+        go("home");
+      }
+    );
+  }
+
+  // ===== Шторка і тост =====
+  function openSheet(title, text, yesLabel, fn) {
+    document.getElementById("sheet-title").textContent = title;
+    document.getElementById("sheet-text").textContent = text;
+    document.getElementById("sheet-yes").textContent = yesLabel;
+    pending = fn;
+    document.getElementById("scrim").classList.add("open");
+    document.getElementById("sheet").classList.add("open");
+  }
+  function closeSheet() {
+    pending = null;
+    document.getElementById("scrim").classList.remove("open");
+    document.getElementById("sheet").classList.remove("open");
+  }
+  document.getElementById("sheet-yes").addEventListener("click", () => {
+    const fn = pending;
+    closeSheet();
+    if (fn) fn();
+  });
+  document.getElementById("sheet-no").addEventListener("click", closeSheet);
+  document.getElementById("scrim").addEventListener("click", closeSheet);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+
+  let toastTimer;
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // ===== Екрани =====
+  function viewHome() {
+    const total = state.packTotal || TOTAL_DEFAULT;
+    const exp = new Date(state.expires);
+    const ups = upcomingList();
+    const next = ups[0];
+    const hoursToNext = next ? (new Date(next.start) - now()) / 3600000 : null;
+
+    let banner = "";
+    if (next && hoursToNext <= 24) {
+      const when = hoursToNext < 1 ? "менш ніж за годину" : `о ${fmtTime(new Date(next.start))}`;
+      banner = `
+        <div class="banner">
+          <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span>
+          <div><strong>Тренування ${when}</strong><p>${next.kind}. Нагадаємо за годину до початку.</p></div>
+        </div>`;
+    }
+
+    let access = "";
+    if (state.balance === 0) {
+      access = `<div class="notice warn"><span>Занять не залишилось.</span><button class="link" data-go="plans">Оформити</button></div>`;
+    } else if (!hasActiveAccess()) {
+      access = `<div class="notice warn"><span>Абонемент закінчився.</span><button class="link" data-go="plans">Продовжити</button></div>`;
+    }
+
+    const nextHtml = next
+      ? `<div class="next">
+           <div class="date-tile"><div class="d">${new Date(next.start).getDate()}</div><div class="m">${MONTHS_S[new Date(next.start).getMonth()]}</div></div>
+           <div><h3>${next.kind}</h3><p>${cap(WD_FULL[new Date(next.start).getDay()])}, о ${fmtTime(new Date(next.start))}</p></div>
+         </div>`
+      : `<div class="empty">Поки немає запланованих занять.</div>`;
+
+    return `
+      <header class="head"><div class="hello">${greeting()}, <em>${CLIENT}</em></div><div class="avatar" aria-hidden="true">${CLIENT[0]}</div></header>
+      <div class="card-dark">
+        <div class="balance-row"><span class="big">${state.balance}</span><span class="big-of">/ ${total}</span></div>
+        <p class="balance-label">${plural(state.balance) === "заняття" ? "заняття" : "занять"} доступно на абонементі</p>
+        <div class="bar" aria-hidden="true"><span style="width:${Math.min(100, state.balance / total * 100)}%"></span></div>
+        <div class="card-meta"><span>Діє до ${fmtDay(exp)}</span><span>${hasActiveAccess() ? "Активний" : "Неактивний"}</span></div>
+      </div>
+      ${banner}
+      ${access}
+      <section class="section">
+        <h2 class="section-title">Наступне</h2>
+        ${nextHtml}
+      </section>
+      <div class="stack">
+        <button class="btn" data-go="book" ${state.balance === 0 ? "disabled" : ""}>Записатися на тренування</button>
+        <button class="btn ghost" data-go="plans">Абонемент і ціни</button>
+      </div>`;
+  }
+
+  function viewBook() {
+    const days = [];
+    for (let i = 0; i < 7; i++) days.push(addDays(now(), i));
+
+    const chips = ["all", ...KINDS].map(k => `
+      <button class="chip" aria-pressed="${k === selectedKind}" data-kind="${k}">${k === "all" ? "Усі" : k}</button>`).join("");
+
+    const dayChips = days.map((d, i) => {
+      const hasAny = TIMES.some((_, idx) => {
+        const s = slotInfo(i, idx);
+        return !s.past && !s.full && (selectedKind === "all" || s.kind === selectedKind);
+      });
+      return `<button class="day" aria-pressed="${i === selectedOffset}" data-day="${i}">
+        <div class="wd">${i === 0 ? "Сьогодні" : WD_S[d.getDay()]}</div>
+        <div class="n">${d.getDate()}</div>
+        ${hasAny ? '<span class="has"></span>' : ""}
+      </button>`;
+    }).join("");
+
+    let slots = "";
+    let shown = 0;
+    TIMES.forEach((_, idx) => {
+      const s = slotInfo(selectedOffset, idx);
+      if (selectedKind !== "all" && s.kind !== selectedKind) return;
+      shown++;
+      let label, disabled = false, cls = "";
+      if (s.mine) { label = "Записано"; disabled = true; cls = "mine"; }
+      else if (s.past) { label = "Минуло"; disabled = true; }
+      else if (s.full) { label = "Заповнено"; disabled = true; }
+      else label = "Обрати";
+      const spotsTxt = s.mine ? "Ваше заняття" : s.past ? "Тренування вже пройшло" : s.full ? "Немає місць" : `Вільних місць: ${s.spots}`;
+      slots += `<button class="slot ${cls}" ${disabled ? "disabled" : ""} data-offset="${selectedOffset}" data-idx="${idx}">
+        <span class="time">${s.time}</span>
+        <span class="info"><span class="kind">${s.kind}</span><br><span class="spots">${spotsTxt}</span></span>
+        <span class="pill">${label}</span>
+      </button>`;
+    });
+    if (!shown) slots = `<div class="empty">На цей день немає тренувань цього типу. Оберіть інший день або «Усі».</div>`;
+
+    const access = !hasActiveAccess()
+      ? `<div class="notice warn"><span>${state.balance === 0 ? "Занять не залишилось." : "Абонемент закінчився."}</span><button class="link" data-go="plans">Абонемент</button></div>`
+      : "";
+
+    return `
+      <header class="head"><div class="hello">Записатися</div></header>
+      <p class="sub">Доступно занять: <strong>${state.balance}</strong></p>
+      ${access}
+      <h2 class="pick-label">Що тренуємо</h2>
+      <div class="chips" role="group" aria-label="Тип тренування">${chips}</div>
+      <h2 class="pick-label">Який день</h2>
+      <div class="days" role="group" aria-label="Дні">${dayChips}</div>
+      <h2 class="pick-label">Який час</h2>
+      <div>${slots}</div>
+      <p class="hint">Скасувати можна не пізніше ніж за ${CANCEL_HOURS} години до початку.</p>`;
+  }
+
+  function viewPlans() {
+    const exp = new Date(state.expires);
+    const cards = PACKS.map(p => `
+      <div class="plan ${p.n === 8 ? "best" : ""}">
+        <div><div class="pn">${p.n} <small>${plural(p.n)}</small></div><div class="pd">${p.label} · діє ${p.days} днів</div></div>
+        <div class="pp">${money(p.price)}</div>
+        <button class="btn ${p.n === 8 ? "bronze" : ""}" data-buy="${p.n}">Оформити</button>
+      </div>`).join("");
+
+    return `
+      <header class="head"><div class="hello">Абонемент</div></header>
+      <p class="sub">Поточний: ${state.balance} ${plural(state.balance)} · ${hasActiveAccess() ? "діє до " + fmtDay(exp) : "неактивний"}</p>
+      <h2 class="section-title" style="margin-top:8px">Пакети</h2>
+      ${cards}
+      <p class="hint">Ціни орієнтовні. Покупка тестова, оплата ще не підключена.</p>`;
+  }
+
+  function viewHistory() {
+    const ups = upcomingList();
+    const upHtml = ups.length
+      ? `<div class="list">${ups.map(b => {
+          const d = new Date(b.start);
+          const can = canCancel(b);
+          return `<div class="row up">
+            <span class="dot"></span>
+            <div class="info">
+              <div class="name">${b.kind}</div>
+              <div class="meta">${fmtDayShort(d)}, ${fmtTime(d)}</div>
+              <button class="cancel" ${can ? "" : "disabled"} data-cancel="${b.start}">${can ? "Скасувати запис" : "Скасування вже недоступне"}</button>
+            </div>
+          </div>`;
+        }).join("")}</div>`
+      : `<div class="empty">Немає запланованих занять.</div>`;
+
+    const past = state.bookings
+      .filter(b => bookingStatus(b) !== "up")
+      .sort((a, b) => new Date(b.start) - new Date(a.start));
+
+    let pastHtml = "";
+    let lastMonth = null;
+    let list = "";
+    past.forEach(b => {
+      const d = new Date(b.start);
+      const month = `${cap(MONTHS_G[d.getMonth()])} ${d.getFullYear()}`;
+      if (month !== lastMonth) {
+        if (list) pastHtml += `<div class="list">${list}</div>`;
+        pastHtml += `<div class="group">${month}</div>`;
+        list = "";
+        lastMonth = month;
+      }
+      const st = bookingStatus(b);
+      const statusTxt = st === "done" ? "Відвідано" : st === "missed" ? "Пропущено" : "Скасовано";
+      list += `<div class="row ${st}">
+        <span class="dot"></span>
+        <div class="info"><div class="name">${b.kind}</div><div class="meta">${fmtDayShort(d)}, ${fmtTime(d)}</div></div>
+        <span class="status">${statusTxt}</span>
+      </div>`;
+    });
+    if (list) pastHtml += `<div class="list">${list}</div>`;
+    if (!past.length) pastHtml = `<div class="empty">Історія з’явиться після першого заняття.</div>`;
+
+    const payHtml = state.payments.slice(0, 5).map(p =>
+      `<div class="row"><span class="dot" style="background:var(--bronze)"></span>
+        <div class="info"><div class="name">Абонемент на ${p.n} ${plural(p.n)}</div><div class="meta">${fmtDayShort(new Date(p.date))}</div></div>
+        <span class="status">${money(p.price)}</span></div>`).join("");
+
+    return `
+      <header class="head"><div class="hello">Ваші <em>тренування</em></div></header>
+      <p class="sub">Заплановані, пройдені та оплати</p>
+      <h2 class="section-title">Заплановані</h2>
+      ${upHtml}
+      <h2 class="section-title" style="margin-top:28px">Історія</h2>
+      ${pastHtml}
+      <h2 class="section-title" style="margin-top:28px">Оплати</h2>
+      <div class="list">${payHtml}</div>`;
+  }
+
+  // ===== Рендер і події =====
+  const VIEWS = { home: viewHome, book: viewBook, plans: viewPlans, history: viewHistory };
+
+  function render() {
+    document.getElementById("app").innerHTML = `<div class="screen">${VIEWS[currentScreen]()}</div>`;
+    document.querySelectorAll(".tab").forEach(t => {
+      const key = t.dataset.go;
+      t.setAttribute("aria-selected", key === currentScreen);
+    });
+  }
+
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-go],[data-kind],[data-day],[data-offset],[data-cancel],[data-buy]");
+    if (!el || el.disabled) return;
+    if (el.dataset.go) return go(el.dataset.go);
+    if (el.dataset.kind) { selectedKind = el.dataset.kind; return render(); }
+    if (el.dataset.day) { selectedOffset = Number(el.dataset.day); return render(); }
+    if (el.dataset.offset) return bookSlot(Number(el.dataset.offset), Number(el.dataset.idx));
+    if (el.dataset.cancel) return cancelBooking(el.dataset.cancel);
+    if (el.dataset.buy) return buyPack(Number(el.dataset.buy));
+  });
+
+  // Оновлюємо стан раз на хвилину (минулі заняття, нагадування)
+  setInterval(render, 60000);
+
+  render();
+</script>
+</body>
+</html>
